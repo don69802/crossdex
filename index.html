@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CrossDEX Pro - Full API Integration</title>
+<title>CrossDEX Pro</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:white;min-height:100vh}
@@ -62,7 +62,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:white;min-height
 .lc label{display:block;font-size:12px;color:#888;margin-bottom:6px}
 .lc input,.lc select{width:100%;padding:10px;background:#252550;border:1px solid #333;border-radius:8px;color:white;font-size:13px;outline:none}
 .pi{display:flex;align-items:center;gap:12px;padding:14px;background:#1a1a3e;border-radius:10px;margin-bottom:8px}
-.hi{display:flex;align-items:center;gap:12px;padding:12px;background:#1a1a3e;border-radius:10px;margin-bottom:8px}
+.hi{display:flex;align-items:center;gap:12px;padding:12px;background:#1a1a3e;border-radius:10px;margin-bottom:10px}
 .ht{padding:4px 8px;border-radius:4px;font-size:10px;font-weight:700}
 .hb{background:rgba(16,185,129,0.2);color:#10b981}
 .hs{background:rgba(239,68,68,0.2);color:#ef4444}
@@ -77,13 +77,12 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:white;min-height
 .g3{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .toast{position:fixed;bottom:20px;right:20px;background:#111128;border:1px solid #1a1a3e;border-radius:10px;padding:14px 20px;z-index:100;display:none;font-size:13px;max-width:400px}
-.toast.on{display:block}
+.toast.on{display:block}.toast.ok{border-color:#10b981}.toast.err{border-color:#ef4444}
 .ftr{text-align:center;padding:30px;color:#555;font-size:12px;border-top:1px solid #1a1a2e;margin-top:40px}
 .api-status{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
 .api-badge{padding:4px 10px;border-radius:12px;font-size:10px;font-weight:700}
 .api-ok{background:rgba(16,185,129,0.2);color:#10b981}
 .api-err{background:rgba(239,68,68,0.2);color:#ef4444}
-.api-loading{background:rgba(245,158,11,0.2);color:#f59e0b}
 .news-item{padding:12px;background:#1a1a3e;border-radius:10px;margin-bottom:8px}
 .news-item a{color:#00d4ff;text-decoration:none}
 .news-item small{color:#666;display:block;margin-top:4px}
@@ -96,222 +95,18 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:white;min-height
 </head>
 <body>
 <div class="hdr">
-<div class="logo">⚡ CrossDEX</div>
+<div class="logo">CrossDEX</div>
 <nav id="nav"></nav>
 <button class="cbtn" id="cb" onclick="conn()">Connect Wallet</button>
 </div>
 <div class="ban">
-<div>
-<h1>Find the <span>Best Rate</span> Across All DEXes</h1>
-<p>We scan 50+ DEXes with real-time APIs. Prices, gas, news & more.</p>
-<button class="cbtn" onclick="conn()">🔗 Connect Wallet</button>
-</div>
-<div class="stats">
-<div class="st"><b id="volStat">Loading...</b><small>Volume</small></div>
-<div class="st"><b>50+</b><small>DEXes</small></div>
-<div class="st"><b id="mcapStat">Loading...</b><small>Market Cap</small></div>
-</div>
+<div><h1>Find the <span>Best Rate</span> Across All DEXes</h1><p>We scan 50+ DEXes with real-time APIs.</p></div>
+<div class="stats"><div class="st"><b id="volStat">Loading...</b><small>Volume</small></div><div class="st"><b>50+</b><small>DEXes</small></div><div class="st"><b id="mcapStat">Loading...</b><small>Market Cap</small></div></div>
 </div>
 <div class="tick"><div class="inner" id="tk"></div></div>
 <div class="main" id="area"></div>
-<div class="modal" id="md"><div class="mbox"><div class="mhd"><b>Select Token</b><button onclick="cm()">✕</button></div><input class="ms" placeholder="Search..." oninput="ft()"><div id="tl"></div></div></div>
+<div class="modal" id="md"><div class="mbox"><div class="mhd"><b>Select Token</b><button onclick="cm()">X</button></div><input class="ms" placeholder="Search..." oninput="ft()"><div id="tl"></div></div></div>
 <div class="toast" id="toast"></div>
-<div class="ftr"><p>CrossDEX Pro © 2024 | APIs: CoinGecko, Etherscan, CryptoCompare, Fear&Greed</p></div>
-
+<div class="ftr"><p>CrossDEX Pro 2024</p></div>
 <script>
-var T=[
-{s:"ETH",n:"Ethereum",i:"⟠",p:3500,bal:1.234,cg:"ethereum",mc:420000000000},
-{s:"WBTC",n:"Wrapped BTC",i:"₿",p:65000,bal:0.05,cg:"wrapped-bitcoin",mc:12000000000},
-{s:"USDC",n:"USD Coin",i:"💵",p:1,bal:5000,cg:"usd-coin",mc:30000000000},
-{s:"USDT",n:"Tether",i:"💲",p:1,bal:3200,cg:"tether",mc:90000000000},
-{s:"DAI",n:"Dai",i:"🔶",p:1,bal:1500,cg:"dai",mc:5000000000},
-{s:"UNI",n:"Uniswap",i:"🦄",p:12,bal:100,cg:"uniswap",mc:7000000000},
-{s:"LINK",n:"Chainlink",i:"🔗",p:18,bal:50,cg:"chainlink",mc:10000000000},
-{s:"PEPE",n:"Pepe",i:"🐸",p:0.000012,bal:50000000,cg:"pepe",mc:5000000000},
-{s:"SHIB",n:"Shiba Inu",i:"🐕",p:0.000025,bal:10000000,cg:"shiba-inu",mc:15000000000},
-{s:"FLOKI",n:"Floki",i:"⚡",p:0.00018,bal:500000,cg:"floki",mc:1500000000},
-{s:"DOGE",n:"Dogecoin",i:"🐶",p:0.15,bal:2000,cg:"dogecoin",mc:20000000000},
-{s:"WIF",n:"dogwifhat",i:"🎩",p:2.50,bal:300,cg:"dogwifhat",mc:2500000000},
-{s:"BONK",n:"Bonk",i:"🦴",p:0.000022,bal:10000000,cg:"bonk",mc:1500000000},
-{s:"MOG",n:"Mog Coin",i:"😎",p:0.0000021,bal:50000000,cg:"mog-coin",mc:800000000}
-];
-
-var DEXES=[
-{name:"Uniswap V3",color:"#ff007a",fee:0.3,icon:"🦄",vol:2500000000},
-{name:"SushiSwap",color:"#fa52a1",fee:0.3,icon:"🍣",vol:800000000},
-{name:"1inch",color:"#1c8cdc",fee:0,icon:"1️⃣",vol:1200000000},
-{name:"Curve",color:"#0066ff",fee:0.04,icon:"📐",vol:500000000},
-{name:"Balancer",color:"#555",fee:0.2,icon:"⚖️",vol:300000000},
-{name:"ParaSwap",color:"#5929e6",fee:0,icon:"🔄",vol:400000000},
-{name:"0x Protocol",color:"#333",fee:0,icon:"0️⃣",vol:600000000},
-{name:"PancakeSwap",color:"#d1884f",fee:0.25,icon:"🥞",vol:1800000000}
-];
-
-var pages=["swap","limit","routes","gas","portfolio","history","alerts","charts","dex","tokens","news","fear","settings"];
-var icons={swap:"⚡",limit:"📋",routes:"📊",gas:"⛽",portfolio:"💼",history:"📜",alerts:"🔔",charts:"📈",dex:"🏦",tokens:"🪙",news:"📰",fear:"😱",settings:"⚙️"};
-var labels={swap:"Swap",limit:"Limit",routes:"Routes",gas:"Gas",portfolio:"Portfolio",history:"History",alerts:"Alerts",charts:"Charts",dex:"DEXes",tokens:"Tokens",news:"News",fear:"Fear",settings:"Settings"};
-
-var sI=T[0],sO=T[7],co=false,pg="swap",md2="in";
-var hist=[],alerts=[],limOrds=[];
-var apiStatus={coingecko:"loading",etherscan:"loading",cryptocompare:"loading",feargreed:"loading"};
-var fearData={value:50,classification:"Neutral"};
-var newsData=[];
-var gasData={slow:15,standard:25,fast:45};
-
-// Build nav
-var navHtml="";pages.forEach(function(p,i){navHtml+='<a'+(i===0?' class="on"':'')+' onclick="go(\''+p+'\',this)">'+icons[p]+' '+labels[p]+'</a>';});
-document.getElementById("nav").innerHTML=navHtml;
-
-// ============ API FUNCTIONS ============
-
-// CoinGecko - Prices, Market Cap, Volume
-function fetchPrices(){
-var ids=T.map(function(t){return t.cg}).join(",");
-fetch("https://api.coingecko.com/api/v3/simple/price?ids="+ids+"&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true")
-.then(function(r){return r.json()})
-.then(function(data){
-var totalVol=0;var totalMC=0;
-T.forEach(function(t){
-if(data[t.cg]){
-t.p=data[t.cg].usd||t.p;
-t.mc=data[t.cg].usd_market_cap||t.mc;
-t.vol24=data[t.cg].usd_24h_vol||0;
-t.change24=data[t.cg].usd_24h_change||0;
-totalVol+=t.vol24;totalMC+=t.mc;
-}
-});
-apiStatus.coingecko="ok";
-document.getElementById("volStat").textContent="$"+fmtBig(totalVol);
-document.getElementById("mcapStat").textContent="$"+fmtBig(totalMC);
-buildTicker();
-})
-.catch(function(){apiStatus.coingecko="error";buildTicker();});
-}
-
-// Etherscan - Gas prices
-function fetchGas(){
-fetch("https://api.etherscan.io/api?module=gastracker&action=gasoracle")
-.then(function(r){return r.json()})
-.then(function(data){
-if(data.result){
-gasData.slow=parseInt(data.result.SafeGasPrice)||15;
-gasData.standard=parseInt(data.result.ProposeGasPrice)||25;
-gasData.fast=parseInt(data.result.FastGasPrice)||45;
-apiStatus.etherscan="ok";
-if(pg==="gas")rn();
-}
-})
-.catch(function(){apiStatus.etherscan="error";});
-}
-
-// CryptoCompare - News
-function fetchNews(){
-fetch("https://min-api.cryptocompare.com/data/v2/news/?lang=EN&limit=10")
-.then(function(r){return r.json()})
-.then(function(data){
-if(data.Data){
-newsData=data.Data.slice(0,10).map(function(n){
-return {title:n.title,url:n.url,source:n.source,published:new Date(n.published_on*1000).toLocaleDateString()};
-});
-apiStatus.cryptocompare="ok";
-if(pg==="news")rn();
-}
-})
-.catch(function(){apiStatus.cryptocompare="error";});
-}
-
-// Fear & Greed Index
-function fetchFearGreed(){
-fetch("https://api.alternative.me/fng/?limit=1")
-.then(function(r){return r.json()})
-.then(function(data){
-if(data.data&&data.data[0]){
-fearData={value:parseInt(data.data[0].value),classification:data.data[0].value_classification};
-apiStatus.feargreed="ok";
-if(pg==="fear")rn();
-}
-})
-.catch(function(){apiStatus.feargreed="error";});
-}
-
-// Fetch all
-function fetchAll(){
-fetchPrices();fetchGas();fetchNews();fetchFearGreed();
-}
-
-// ============ TICKER ============
-function buildTicker(){
-var el=document.getElementById("tk");if(!el)return;
-var h="";
-for(var i=0;i<2;i++){T.forEach(function(t){
-var ch=t.change24||(Math.random()*10-5);
-var cls=ch>=0?"g":"r";
-h+='<div class="ti"><b>'+t.i+' '+t.s+'</b> $'+t.p.toLocaleString(undefined,{minimumFractionDigits:t.p<1?6:2,maximumFractionDigits:t.p<1?6:2})+' <span class="'+cls+'">'+(ch>=0?"+":"")+ch.toFixed(2)+'%</span></div>';
-});}
-el.innerHTML=h;
-}
-
-// ============ NAVIGATION ============
-function go(p,b){pg=p;document.querySelectorAll(".hdr nav a").forEach(function(x){x.classList.remove("on")});if(b)b.classList.add("on");rn();}
-
-// ============ RENDER ============
-function rn(){
-var a=document.getElementById("area");
-
-if(pg==="swap"){
-var routes=genRoutes();var best=routes[0];
-a.innerHTML='<div class="swap-wrap"><div class="card" style="max-width:420px;width:100%"><h2>⚡ Best Rate Swap</h2><div class="fld"><label><span>YOU PAY</span><span>Balance: '+fmtBal(sI)+'</span></label><div class="frow"><input id="ai" placeholder="0.0" oninput="cl()"><button class="tsel" onclick="om(\'in\')">'+sI.i+' '+sI.s+' ▼</button></div></div><div class="arr"><button onclick="sw()">↕</button></div><div class="fld"><label><span>YOU RECEIVE</span><span>Balance: '+fmtBal(sO)+'</span></label><div class="frow"><input id="ao" placeholder="0.0" readonly><button class="tsel" onclick="om(\'out\')">'+sO.i+' '+sO.s+' ▼</button></div></div><div class="qi" id="qi"><div class="qr"><span class="ql">Best Route</span><span class="qv" id="qr">-</span></div><div class="qr"><span class="ql">Savings vs Avg</span><span class="qv g" id="qp">-</span></div><div class="qr"><span class="ql">Gas Fee</span><span class="qv" id="qf">-</span></div></div><button class="sbtn'+(co?"":" off")+'" onclick="ds()">'+(co?"Swap via "+best.name:"Connect Wallet to Swap")+'</button></div><div class="card" style="max-width:420px;width:100%"><h2>📊 Compare Routes</h2>'+renderRoutes(routes)+'</div></div>';
-
-} else if(pg==="limit"){
-a.innerHTML='<div class="card" style="max-width:420px;margin:0 auto"><h2>📋 Limit Orders</h2><div class="lc"><label>From</label><button class="tsel" onclick="om(\'in\')" style="width:100%;text-align:left">'+sI.i+' '+sI.s+'</button></div><div class="lc"><label>To</label><button class="tsel" onclick="om(\'out\')" style="width:100%;text-align:left">'+sO.i+' '+sO.s+'</button></div><div class="lc"><label>Amount</label><input type="number" id="limAmt" placeholder="0.0"></div><div class="lc"><label>Target Price ($)</label><input type="number" id="limPrice" placeholder="0.00"></div><div class="lc"><label>Expiry</label><select><option>24h</option><option>7d</option><option>30d</option></select></div><button class="sbtn" onclick="placeLim()">Place Order</button><div style="margin-top:16px"><h3 style="font-size:14px;margin-bottom:10px">Active Orders</h3>'+renderLimOrds()+'</div></div>';
-
-} else if(pg==="routes"){
-a.innerHTML='<div class="card" style="max-width:600px;margin:0 auto"><h2>📊 All Routes</h2>'+renderRoutes(genRoutes())+'</div>';
-
-} else if(pg==="gas"){
-var g1=gasData.slow;var g2=gasData.standard;var g3=gasData.fast;
-var ethPrice=T[0].p;
-a.innerHTML='<div class="card" style="max-width:600px;margin:0 auto"><h2>⛽ Gas Tracker (Etherscan API)</h2><div class="api-status"><span class="api-badge '+(apiStatus.etherscan==="ok"?"api-ok":"api-err")+'">Etherscan: '+apiStatus.etherscan+'</span></div><div class="gg"><div class="gi"><div class="gs">🐢 Slow</div><div class="gp g">'+g1+'</div><div class="gc">Gwei</div><div class="gc">~$'+(g1*0.000021*ethPrice).toFixed(2)+'</div><div class="gas-bar"><div class="gas-fill" style="width:'+Math.min(g1*2,100)+'%;background:#10b981"></div></div></div><div class="gi" style="border:1px solid #00d4ff"><div class="gs">🚶 Standard</div><div class="gp" style="color:#00d4ff">'+g2+'</div><div class="gc">Gwei</div><div class="gc">~$'+(g2*0.000021*ethPrice).toFixed(2)+'</div><div class="gas-bar"><div class="gas-fill" style="width:'+Math.min(g2*2,100)+'%;background:#00d4ff"></div></div></div><div class="gi"><div class="gs">🚀 Fast</div><div class="gp r">'+g3+'</div><div class="gc">Gwei</div><div class="gc">~$'+(g3*0.000021*ethPrice).toFixed(2)+'</div><div class="gas-bar"><div class="gas-fill" style="width:'+Math.min(g3*2,100)+'%;background:#ef4444"></div></div></div></div><div style="margin-top:12px;padding:12px;background:#1a1a3e;border-radius:8px;font-size:12px;color:#888">💡 Swap uses ~150k-200k gas units. Prices from Etherscan API.</div></div>';
-
-} else if(pg==="portfolio"){
-var total=0;T.forEach(function(t){total+=t.bal*t.p});
-var h='<div class="card" style="max-width:600px;margin:0 auto"><h2>💼 Portfolio</h2><div style="text-align:center;margin-bottom:20px"><div style="font-size:12px;color:#888">Total Value</div><div style="font-size:36px;font-weight:800;color:#00d4ff">$'+total.toLocaleString(undefined,{minimumFractionDigits:2})+'</div></div>';
-T.forEach(function(t){if(t.bal>0){var val=t.bal*t.p;var ch=t.change24||0;h+='<div class="pi"><div style="font-size:24px;width:40px;text-align:center">'+t.i+'</div><div style="flex:1"><b>'+t.s+'</b><br><small style="color:#666">'+t.n+'</small></div><div style="text-align:right"><b>'+t.bal.toLocaleString(undefined,{maximumFractionDigits:4})+' '+t.s+'</b><br><small style="color:#888">$'+val.toLocaleString(undefined,{minimumFractionDigits:2})+' <span class="'+(ch>=0?"g":"r")+'">'+(ch>=0?"+":"")+ch.toFixed(2)+'%</span></small></div></div>';}});
-h+='</div>';a.innerHTML=h;
-
-} else if(pg==="history"){
-var h='<div class="card" style="max-width:600px;margin:0 auto"><h2>📜 History</h2>';
-if(hist.length===0)h+='<p style="color:#888;text-align:center;padding:20px">No transactions yet</p>';
-hist.forEach(function(tx){h+='<div class="hi"><div class="ht '+(tx.type==="buy"?"hb":"hs")+'">'+tx.type.toUpperCase()+'</div><div style="flex:1"><b>'+tx.from+' → '+tx.to+'</b><br><small style="color:#666">'+tx.time+'</small></div><div style="text-align:right"><b>$'+tx.value+'</b><br><small style="color:#888">'+tx.dex+'</small></div></div>';});
-h+='</div>';a.innerHTML=h;
-
-} else if(pg==="alerts"){
-var h='<div class="card" style="max-width:600px;margin:0 auto"><h2>🔔 Alerts</h2><div class="g2" style="margin-bottom:12px"><div class="lc"><label>Token</label><select id="alertTok">'+T.map(function(t){return '<option>'+t.s+'</option>'}).join('')+'</select></div><div class="lc"><label>Target Price</label><input type="number" id="alertPrice" placeholder="0.00"></div></div><div class="lc"><label>Condition</label><select id="alertCond"><option>Above</option><option>Below</option></select></div><button class="sbtn" onclick="addAlert()" style="margin-top:10px">Add Alert</button><div style="margin-top:16px"><h3 style="font-size:14px;margin-bottom:10px">Active Alerts</h3>'+renderAlerts()+'</div></div>';
-
-} else if(pg==="charts"){
-a.innerHTML='<div class="card" style="max-width:700px;margin:0 auto"><h2>📈 Charts</h2><div style="margin-bottom:12px"><button class="tsel" onclick="om(\'chart\')">'+sI.i+' '+sI.s+' ▼</button></div><div class="cbs"><button class="on" onclick="setChart(this)">1H</button><button onclick="setChart(this)">1D</button><button onclick="setChart(this)">1W</button><button onclick="setChart(this)">1M</button><button onclick="setChart(this)">1Y</button></div><div class="cb"><canvas id="chartCanvas" class="cc"></canvas></div><div style="display:flex;justify-content:space-between;margin-top:12px;font-size:12px;color:#888"><span>Current: $'+sI.p.toLocaleString()+'</span><span class="g">+24h: '+(sI.change24||0).toFixed(2)+'%</span></div></div>';
-setTimeout(drawChart,100);
-
-} else if(pg==="dex"){
-var h='<div class="g3"><h2 style="grid-column:1/-1;margin-bottom:8px">🏦 DEXes</h2>';
-DEXES.forEach(function(d){h+='<div class="card" style="text-align:center"><div style="font-size:36px;margin-bottom:10px">'+d.icon+'</div><b>'+d.name+'</b><br><small style="color:#888">Fee: '+d.fee+'%</small><br><small style="color:#00d4ff">Vol: $'+fmtBig(d.vol)+'</small><br><div style="margin-top:10px;padding:6px 12px;background:rgba(16,185,129,0.1);border-radius:6px;font-size:11px;color:#10b981;display:inline-block">● Active</div></div>';});
-h+='</div>';a.innerHTML=h;
-
-} else if(pg==="tokens"){
-var h='<div class="card" style="max-width:600px;margin:0 auto"><h2>🪙 Tokens (CoinGecko)</h2><div class="api-status"><span class="api-badge '+(apiStatus.coingecko==="ok"?"api-ok":"api-err")+'">CoinGecko: '+apiStatus.coingecko+'</span></div>';
-T.forEach(function(t){var ch=t.change24||0;h+='<div class="ti2" style="background:#1a1a3e;border-radius:10px;margin-bottom:6px"><span style="font-size:24px">'+t.i+'</span><div style="flex:1"><b>'+t.s+'</b><br><small style="color:#666">'+t.n+'</small></div><div style="text-align:right"><b>$'+t.p.toLocaleString(undefined,{minimumFractionDigits:t.p<1?6:2})+'</b><br><small class="'+(ch>=0?"g":"r")+'">'+(ch>=0?"+":"")+ch.toFixed(2)+'%</small></div></div>';});
-h+='</div>';a.innerHTML=h;
-
-} else if(pg==="news"){
-var h='<div class="card" style="max-width:700px;margin:0 auto"><h2>📰 Crypto News (CryptoCompare)</h2><div class="api-status"><span class="api-badge '+(apiStatus.cryptocompare==="ok"?"api-ok":"api-err")+'">CryptoCompare: '+apiStatus.cryptocompare+'</span></div>';
-if(newsData.length===0)h+='<p style="color:#888;text-align:center;padding:20px">Loading news...</p>';
-newsData.forEach(function(n){h+='<div class="news-item"><a href="'+n.url+'" target="_blank">'+n.title+'</a><small>'+n.source+' | '+n.published+'</small></div>';});
-h+='</div>';a.innerHTML=h;
-
-} else if(pg==="fear"){
-var fv=fearData.value;var fc=fearData.classification;
-var color=fv<25?"#ef4444":fv<50?"#f59e0b":fv<75?"#eab308":"#10b981";
-a.innerHTML='<div class="card" style="max-width:600px;margin:0 auto"><h2>😱 Fear & Greed Index</h2><div class="api-status"><span class="api-badge '+(apiStatus.feargreed==="ok"?"api-ok":"api-err")+'">Alternative.me: '+apiStatus.feargreed+'</span></div><div style="text-align:center;padding:20px"><div style="font-size:64px;font-weight:800;color:'+color+'">'+fv+'</div><div style="font-size:20px;margin:10px 0">'+fc+'</div><div class="fear-bar"><div class="fear-needle" style="left:'+fv+'%"></div></div><div style="display:flex;justify-content:space-between;font-size:11px;color:#888"><span>Extreme Fear</span><span>Neutral</span><span>Extreme Greed</span></div></div><div style="margin-top:16px;padding:12px;background:#1a1a3e;border-radius:8px;font-size:12px;color:#888">💡 Data from Alternative.me Fear & Greed Index API. Updated daily.</div></div>';
-
-} else if(pg==="settings"){
-a.innerHTML='<div class="card" style="max-width:500px;margin:0 auto"><h2>⚙️ Settings</h2><div class="lc"><label>Slippage</label><div style="display:flex;gap:8px;margin-top:6px"><button style="padding:8px 16px;background:#252550;border:none;border-radius:6px;color:white;cursor:pointer">0.1%</button><button style="padding:8px 16px;background:#00d4ff;border:none;border-radius:6px;color:#000;cursor:pointer;font-weight:700">0.5%</button><button style="padding:8px 16px;background:#252550;border:none;border-radius:6px;color:white;cursor:pointer">1%</button><button style="padding:8px 16px;background:#252550;border:none;border-radius:6px;color:white;cursor:pointer">5%</button></div></div><div class="lc"><label>Default DEX</label><select>'+DEXES.map(function(d){return '<option>'+d.name+'</option>'}).join('')+'</select></div><div class="lc"><label>Max Slippage (%)</label><input type="number" value="3"></div><div class="lc"><label>Deadline (min)</label><input type="number" value="20"></div><div style="margin-top:16px"><h3 style="font-size:14px;margin-bottom:10px">API Status</h3><div class="api-status"><span class="api-badge '+(apiStatus.coingecko==="ok"?"api-ok":"api-err")+'">CoinGecko: '+apiStatus.coingecko+'</span><span class="api-badge '+(apiStatus.etherscan==="ok"?"api-ok":"api-err")+'">Etherscan: '+apiStatus.etherscan+'</span>
+var T=[{s:"ETH",n:"Ethereum",i:"E",p:3500,bal:0,cg:"ethereum",addr:"0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",dec:18},{s:"WBTC",n:"Wrapped BTC",i:"B",p:65000,bal:0,cg:"wrapped-bitcoin",addr:"0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",dec:8},{s:"USDC",n:"USD Coin",i:"$",p:1,bal:0,cg:"usd-coin",addr:"0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",dec:6},{s:"USDT",n:"Tether",i:"T",p:1,bal:0,cg:"tether",addr:"0xdAC17F958D2ee523a2206206994597C13D831ec7",dec:6},{s:"DAI",n:"Dai",i:"D",p:1,bal:0,cg:"dai",addr:"0x6B175474E89094C44Da98b954EedeAC495271d0F",dec:18},{s:"UNI",n:"Uniswap",i:"U",p:12,bal:0,cg:"uniswap",addr:"0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",dec:18},{s:"LINK",n:"Chainlink",i:"L",p:18,bal:0,cg:"chainlink",addr:"0x514910771AF9Ca656af840dff83E8264EcF986CA",dec:18},{s:"PEPE",n:"Pepe",i:"P",p:0.000012,bal:0,cg:"pepe",addr:"0x698250814
